@@ -14,22 +14,7 @@ function Vegetables() {
   const [products, setProducts] = useState([]);
   const [wishlist, setWishlist] = useState([]);
 
-  // 🔹 Fetch masala products
-  useEffect(() => {
-    fetchProducts();
-    fetchWishlist();
-  }, []);
-
-  const fetchProducts = async () => {
-    try {
-      const res = await API.get("/store/Vegetables");
-      setProducts(res.data);
-    } catch (err) {
-      console.log("Error fetching vegetables:", err);
-    }
-  };
-
-  // 🔹 Fetch wishlist
+   // 🔹 Fetch wishlist
   const fetchWishlist = async () => {
     try {
       const res = await API.get("/wishlist");
@@ -39,17 +24,29 @@ function Vegetables() {
     }
   };
 
+
+  const fetchVegetables = async () => {
+    try {
+      const res = await API.get("/store/Vegetables");
+      setProducts(res.data);
+    } catch (err) {
+      console.log("Error fetching vegetables:", err);
+    }
+  };
+  
+  useEffect(() => {
+    fetchVegetables();
+    fetchWishlist();
+  }, []);
+
+  
   // ❤️ Toggle Wishlist
   const toggleWishlist = async (productId) => {
     try {
-      if (wishlist.includes(productId)) {
-        await API.post("/wishlist/remove", { productId });
-      } else {
-        await API.post("/wishlist/add", { productId });
-      }
+      await API.post("/wishlist/add", { productId });
       fetchWishlist();
     } catch (err) {
-      alert("Login required");
+      alert("Please login first");
     }
   };
 

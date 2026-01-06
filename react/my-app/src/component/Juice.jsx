@@ -14,21 +14,6 @@ function Juice() {
   const [products, setProducts] = useState([]);
   const [wishlist, setWishlist] = useState([]);
 
-  // 🔹 Fetch products
-  useEffect(() => {
-    fetchProducts();
-    fetchWishlist();
-  }, []);
-
-  const fetchProducts = async () => {
-    try {
-      const res = await API.get("/store/Juice");
-      setProducts(res.data);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
   // 🔹 Fetch wishlist
   const fetchWishlist = async () => {
     try {
@@ -38,6 +23,32 @@ function Juice() {
       console.log("Wishlist error:", err);
     }
   };
+
+  //fetch juice
+   const fetchJuice = async () => {
+    try {
+      const res = await API.get("/store/Juice");
+      setProducts(res.data);
+    } catch (err) {
+      console.log("Error fetching fruits:",err);
+    }
+  };
+
+  useEffect(() => {
+    fetchJuice();
+    fetchWishlist();
+  }, []);
+
+  // ❤️ Toggle Wishlist
+  const toggleWishlist = async (productId) => {
+    try {
+      await API.post("/wishlist/add", { productId });
+      fetchWishlist();
+    } catch (err) {
+      alert("Please login first");
+    }
+  };
+  
 
   // 🛒 Add to cart
   const handleAddToCart = async (product) => {
@@ -51,19 +62,7 @@ function Juice() {
     }
   };
 
-  // ❤️ Toggle wishlist
-  const toggleWishlist = async (productId) => {
-    try {
-      if (wishlist.includes(productId)) {
-        await API.post("/wishlist/remove", { productId });
-      } else {
-        await API.post("/wishlist/add", { productId });
-      }
-      fetchWishlist();
-    } catch (err) {
-      alert("Login required");
-    }
-  };
+  
 
   return (
     <div style={{ padding: "60px", paddingTop: "100px" }}>

@@ -17,22 +17,7 @@ function MilkProduct() {
   const [products, setProducts] = useState([]);
   const [wishlist, setWishlist] = useState([]);
 
-  // 🔹 Fetch Milk Products
-  useEffect(() => {
-    fetchProducts();
-    fetchWishlist();
-  }, []);
-
-  const fetchProducts = async () => {
-    try {
-      const res = await API.get("/store/Milk Product");
-      setProducts(res.data);
-    } catch (err) {
-      console.error("Error fetching milk products:", err);
-    }
-  };
-
-  // 🔹 Fetch Wishlist
+   // 🔹 Fetch Wishlist
   const fetchWishlist = async () => {
     try {
       const res = await API.get("/wishlist");
@@ -42,20 +27,33 @@ function MilkProduct() {
     }
   };
 
-  // ❤️ Toggle Wishlist
-  const toggleWishlist = async (productId) => {
+  // fetch milk product
+  const fetchProducts = async () => {
     try {
-      if (wishlist.includes(productId)) {
-        await API.post("/wishlist/remove", { productId });
-      } else {
-        await API.post("/wishlist/add", { productId });
-      }
-      fetchWishlist();
+      const res = await API.get("/store/Milk Product");
+      setProducts(res.data);
     } catch (err) {
-      alert("Login required");
+      console.error("Error fetching milk products:", err);
     }
   };
 
+  
+  useEffect(() => {
+    fetchProducts();
+    fetchWishlist();
+  }, []);
+
+  // ❤️ Toggle Wishlist
+  const toggleWishlist = async (productId) => {
+    try {
+      await API.post("/wishlist/add", { productId });
+      fetchWishlist();
+    } catch (err) {
+      alert("Please login first");
+    }
+  };
+
+  
   // 🛒 Add to Cart
   const handleAddToCart = async (product) => {
     try {

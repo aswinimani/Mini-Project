@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useState, useEffect } from "react";
 import { Grid, Card, CardContent, Typography, Button, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";

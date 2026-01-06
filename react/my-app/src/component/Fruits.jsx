@@ -27,7 +27,7 @@ function Fruits() {
   // 🍎 Fetch Fruits
   const fetchFruits = async () => {
     try {
-      const res = await API.get("/stores?category=fruits"); // ✅ CORRECT API
+      const res = await API.get("/store/Fruits"); // ✅ CORRECT API
       setProducts(res.data);
     } catch (err) {
       console.error("Error fetching fruits:", err);
@@ -67,11 +67,11 @@ function Fruits() {
         Fruits Category
       </Typography>
 
-      {products.length === 0 && (
+      {/* {products.length === 0 && (
         <Typography align="center" color="text.secondary">
           No fruits available
         </Typography>
-      )}
+      )} */}
 
       <Grid container spacing={3} justifyContent="center">
         {products.map((item) => (

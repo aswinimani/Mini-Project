@@ -25,7 +25,7 @@ function Wishlist() {
       await API.post("/wishlist/remove", { productId });
 
       setWishlistItems((prev) =>
-        prev.filter((item) => item._id !== productId)
+        prev.filter((item) => item.product._id !== productId)
       );
     } catch (err) {
       console.log("Remove wishlist error:", err);

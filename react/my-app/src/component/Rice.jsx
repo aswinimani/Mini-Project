@@ -14,21 +14,6 @@ function Rice() {
   const [products, setProducts] = useState([]);
   const [wishlist, setWishlist] = useState([]);
 
-  // 🔹 Fetch masala products
-  useEffect(() => {
-    fetchProducts();
-    fetchWishlist();
-  }, []);
-
-  const fetchProducts = async () => {
-    try {
-      const res = await API.get("/store/Rice");
-      setProducts(res.data);
-    } catch (err) {
-      console.log("Error fetching rice:", err);
-    }
-  };
-
   // 🔹 Fetch wishlist
   const fetchWishlist = async () => {
     try {
@@ -39,17 +24,30 @@ function Rice() {
     }
   };
 
+  const fetchRice = async () => {
+    try {
+      const res = await API.get("/store/Rice");
+      setProducts(res.data);
+    } catch (err) {
+      console.log("Error fetching rice:", err);
+    }
+  };
+
+  
+  // 🔹 Fetch masala products
+  useEffect(() => {
+    fetchRice();
+    fetchWishlist();
+  }, []);
+
+  
   // ❤️ Toggle Wishlist
   const toggleWishlist = async (productId) => {
     try {
-      if (wishlist.includes(productId)) {
-        await API.post("/wishlist/remove", { productId });
-      } else {
-        await API.post("/wishlist/add", { productId });
-      }
+      await API.post("/wishlist/add", { productId });
       fetchWishlist();
     } catch (err) {
-      alert("Login required");
+      alert("Please login first");
     }
   };
 

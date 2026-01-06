@@ -17,22 +17,7 @@ function Nuts() {
   const [products, setProducts] = useState([]);
   const [wishlist, setWishlist] = useState([]);
 
-  // 🔹 Fetch nuts
-  useEffect(() => {
-    fetchProducts();
-    fetchWishlist();
-  }, []);
-
-  const fetchProducts = async () => {
-    try {
-      const res = await API.get("/store/Nuts");
-      setProducts(res.data);
-    } catch (err) {
-      console.error("Error fetching nuts:", err);
-    }
-  };
-
-  // 🔹 Fetch wishlist
+   // 🔹 Fetch wishlist
   const fetchWishlist = async () => {
     try {
       const res = await API.get("/wishlist");
@@ -42,17 +27,29 @@ function Nuts() {
     }
   };
 
+   const fetchNuts = async () => {
+    try {
+      const res = await API.get("/store/Nuts");
+      setProducts(res.data);
+    } catch (err) {
+      console.error("Error fetching nuts:", err);
+    }
+  };
+
+  // 🔹 Fetch nuts
+  useEffect(() => {
+    fetchNuts();
+    fetchWishlist();
+  }, []);
+
+
   // ❤️ Toggle Wishlist
   const toggleWishlist = async (productId) => {
     try {
-      if (wishlist.includes(productId)) {
-        await API.post("/wishlist/remove", { productId });
-      } else {
-        await API.post("/wishlist/add", { productId });
-      }
+      await API.post("/wishlist/add", { productId });
       fetchWishlist();
     } catch (err) {
-      alert("Login required");
+      alert("Please login first");
     }
   };
 

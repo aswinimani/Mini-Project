@@ -17,20 +17,7 @@ function Masala() {
   const [products, setProducts] = useState([]);
   const [wishlist, setWishlist] = useState([]);
 
-  // 🔹 Fetch masala products
-  useEffect(() => {
-    fetchProducts();
-    fetchWishlist();
-  }, []);
-
-  const fetchProducts = async () => {
-    try {
-      const res = await API.get("/store/Masala");
-      setProducts(res.data);
-    } catch (err) {
-      console.log("Error fetching masala:", err);
-    }
-  };
+ 
 
   // 🔹 Fetch wishlist
   const fetchWishlist = async () => {
@@ -42,17 +29,28 @@ function Masala() {
     }
   };
 
+  const fetchMasala = async () => {
+    try {
+      const res = await API.get("/store/Masala");
+      setProducts(res.data);
+    } catch (err) {
+      console.log("Error fetching masala:", err);
+    }
+  };
+
+   // 🔹 Fetch masala products
+  useEffect(() => {
+    fetchMasala();
+    fetchWishlist();
+  }, []);
+  
   // ❤️ Toggle Wishlist
   const toggleWishlist = async (productId) => {
     try {
-      if (wishlist.includes(productId)) {
-        await API.post("/wishlist/remove", { productId });
-      } else {
         await API.post("/wishlist/add", { productId });
-      }
       fetchWishlist();
     } catch (err) {
-      alert("Login required");
+      alert("Please login first");
     }
   };
 
