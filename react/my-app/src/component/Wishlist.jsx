@@ -1,66 +1,65 @@
-import React, { useState, useEffect } from "react";
-import {
-  Grid,
-  Card,
-  CardContent,
-  Typography,
-  Button,
-} from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Grid, Card, CardContent, Typography, Button } from "@mui/material";
+import API from "../api";
 
 function Wishlist() {
   const [wishlistItems, setWishlistItems] = useState([]);
 
+  // ✅ Fetch wishlist
+  const fetchWishlist = async () => {
+    try {
+      const res = await API.get("/wishlist");
+      setWishlistItems(res.data);
+    } catch (err) {
+      console.log("Wishlist error:", err);
+    }
+  };
+
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("wishlist")) || [];
-    setWishlistItems(stored);
+    fetchWishlist();
   }, []);
 
-  // 💔 Remove from wishlist
-  const removeFromWishlist = (id) => {
-    const updated = wishlistItems.filter((item) => item._id !== id);
-    setWishlistItems(updated);
-    localStorage.setItem("wishlist", JSON.stringify(updated));
-    // alert("Removed from wishlist 💔");
+  // ✅ Remove from wishlist
+  const removeFromWishlist = async (productId) => {
+    try {
+      await API.post("/wishlist/remove", { productId });
+
+      setWishlistItems((prev) =>
+        prev.filter((item) => item._id !== productId)
+      );
+    } catch (err) {
+      console.log("Remove wishlist error:", err);
+    }
   };
 
   return (
-    <div style={{ padding: "60px",paddingTop:"100px" }}>
-      <Typography variant="h4" align="center" gutterBottom>
-         Your Wishlist
+    <div style={{ padding: "60px", paddingTop: "100px" }}>
+      <Typography variant="h4" align="center">
+        ❤️ Wishlist
       </Typography>
 
       {wishlistItems.length === 0 ? (
-        <Typography align="center" color="text.secondary">
-          No items in your wishlist.
-        </Typography>
+        <Typography align="center">No items in wishlist</Typography>
       ) : (
         <Grid container spacing={3} justifyContent="center">
           {wishlistItems.map((item) => (
             <Grid item xs={12} sm={6} md={3} key={item._id}>
-              <Card sx={{ borderRadius: 3, boxShadow: 3, padding: "10px" }}>
+              <Card>
                 <img
                   src={item.image}
                   alt={item.name}
-                  style={{
-                    width: "100%",
-                    height: "150px",
-                    objectFit: "contain",
-                    borderRadius: 3,
-                  }}
+                  style={{ width: "100%", height: 150 }}
                 />
-                <CardContent sx={{ textAlign: "center" }}>
-                  <Typography variant="h6" fontWeight="bold">
-                    {item.name}
-                  </Typography>
-                  <Typography sx={{ color: "#444" }}>
-                    ₹{item.price}
-                  </Typography>
+
+                <CardContent>
+                  <Typography>{item.name}</Typography>
+                  <Typography>₹{item.price}</Typography>
 
                   <Button
-                    variant="contained"
+                  variant="contained"
                     color="error"
                     size="small"
-                    sx={{ mt: 1 }}
+                    sx={{mt:1}}
                     onClick={() => removeFromWishlist(item._id)}
                   >
                     Remove

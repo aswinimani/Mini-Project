@@ -26,7 +26,7 @@ function SearchResult() {
   };
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/products")
+    axios.get("https://mini-project-57ws.onrender.com/api/products")
       .then(res => {
         const filtered = res.data.filter(item =>
           item.name.toLowerCase().includes(query.toLowerCase())

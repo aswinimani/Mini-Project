@@ -10,12 +10,12 @@ function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/api/login", {
+      const res = await axios.post("https://mini-project-57ws.onrender.com/api/login", {
         email,
         password,
       });
       localStorage.setItem("token", res.data.token);
-      // alert("Login successful!");
+      alert("Login successful!");
       navigate("/home")
     } catch (err) {
       alert(err.response?.data?.message || "Login failed");

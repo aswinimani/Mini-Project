@@ -1,19 +1,7 @@
-
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  AppBar,
-  Toolbar,
-  Typography,
-  IconButton,
-  Drawer,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  Box,
-  InputBase,
-  Badge
+  AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem,
+  ListItemButton, ListItemText, Box, InputBase, Badge, Menu, MenuItem
 } from "@mui/material";
 
 import MenuIcon from "@mui/icons-material/Menu";
@@ -25,16 +13,34 @@ import SearchIcon from "@mui/icons-material/Search";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import img from "../assets/OIP.jpg";
 
-function Appbar() {
+function Appbar({ token }) {  // <-- token prop pass pannunga from parent
   const [open, setOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [profileAnchorEl, setProfileAnchorEl] = useState(null);
+  const [cartCount, setCartCount] = useState(0);
+
   const navigate = useNavigate();
 
-  // ⭐ Get cart count from localStorage
-  const cartCount = JSON.parse(localStorage.getItem("cart"))?.length || 0;
+  // ⭐ Fetch cart count from backend API
+  const fetchCartCount = async () => {
+    if (!token) return;
+    try {
+      const res = await axios.get("http://localhost:5000/api/cart", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCartCount(res.data.length);
+    } catch (err) {
+      console.error("Cart fetch error:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchCartCount();
+  }, [token]);
 
   const handleSearch = () => {
     if (search.trim() !== "") {
@@ -44,44 +50,44 @@ function Appbar() {
     }
   };
 
-  const menuItems = [
-    { name: "Home", icon: <HomeIcon sx={{ fontSize: 20 }} />, path: "/home" },
-    { name: "Products", icon: <StorefrontIcon sx={{ fontSize: 20 }} />, path: "/products" },
-    { name: "Wishlist", icon: <FavoriteIcon sx={{ fontSize: 20 }} />, path: "/wishlist" },
+  // Profile handlers
+  const handleProfileOpen = (event) => setProfileAnchorEl(event.currentTarget);
+  const handleProfileClose = () => setProfileAnchorEl(null);
+  const handleAdmin = () => { handleProfileClose(); navigate("/profile"); };
+  const handleLogout = () => { handleProfileClose(); navigate("/"); };
 
-    // ⭐ Cart icon with badge
+  const menuItems = [
+    { name: "Home", icon: <HomeIcon />, path: "/home" },
+    { name: "Products", icon: <StorefrontIcon />, path: "/products" },
+    { name: "Wishlist", icon: <FavoriteIcon />, path: "/wishlist" },
     {
       name: "Cart",
       icon: (
         <Badge badgeContent={cartCount} color="error">
-          <ShoppingCartIcon sx={{ fontSize: 20 }} />
+          <ShoppingCartIcon />
         </Badge>
       ),
       path: "/cart",
     },
-
-    { name: "Profile", icon: <AccountCircleIcon sx={{ fontSize: 20 }} />, path: "/profile" },
   ];
 
   return (
     <>
       <AppBar position="fixed" sx={{ backgroundColor: "black", p: 1 }}>
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-          
-          {/* Logo */}
           <Link to="/" style={{ textDecoration: "none" }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <img src={img} alt="logo" style={{ width: 45 }} />
               <Typography
                 variant="h6"
-                sx={{ fontWeight: "bold", color: "white", letterSpacing: 1, fontStyle: "italic" }}
+                sx={{ fontWeight: "bold", color: "white", fontStyle: "italic" }}
               >
                 Grocery
               </Typography>
             </Box>
           </Link>
 
-          {/* Desktop Search Bar */}
+          {/* Desktop Search */}
           <Box
             sx={{
               display: { xs: "none", sm: "flex" },
@@ -95,9 +101,7 @@ function Appbar() {
           >
             <SearchIcon
               sx={{ color: "gray", mr: 1, cursor: "pointer" }}
-              onClick={handleSearch}
-            />
-
+              onClick={handleSearch}/>
             <InputBase
               placeholder="Search Product..."
               sx={{ width: "100%" }}
@@ -106,17 +110,8 @@ function Appbar() {
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             />
           </Box>
-
-          {/* Mobile Search Icon */}
-          <IconButton
-            sx={{ display: { xs: "block", sm: "none" }, color: "white", mr: 1 }}
-            onClick={() => setMobileSearchOpen(true)}
-          >
-            <SearchIcon />
-          </IconButton>
-
           {/* Desktop Menu */}
-          <Box sx={{ display: { xs: "none", md: "flex" }, gap: 3, alignItems: "center" }}>
+          <Box sx={{ display: { xs: "none", md: "flex" }, gap: 3 }}>
             {menuItems.map((item) => (
               <Box
                 key={item.name}
@@ -134,6 +129,31 @@ function Appbar() {
                 <Typography variant="body2">{item.name}</Typography>
               </Box>
             ))}
+
+            {/* Profile Dropdown */}
+            <Box
+              onClick={handleProfileOpen}
+              sx={{
+                color: "white",
+                cursor: "pointer",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                "&:hover": { color: "lightgreen" },
+              }}
+            >
+              <AccountCircleIcon />
+              <Typography variant="body2">Profile</Typography>
+            </Box>
+
+            <Menu
+              anchorEl={profileAnchorEl}
+              open={Boolean(profileAnchorEl)}
+              onClose={handleProfileClose}
+            >
+              <MenuItem onClick={handleAdmin}>Admin</MenuItem>
+              <MenuItem onClick={handleLogout}>Logout</MenuItem>
+            </Menu>
           </Box>
 
           {/* Mobile Menu Icon */}
@@ -147,8 +167,12 @@ function Appbar() {
       </AppBar>
 
       {/* Mobile Search Drawer */}
-      <Drawer anchor="top" open={mobileSearchOpen} onClose={() => setMobileSearchOpen(false)}>
-        <Box sx={{ p: 2, background: "white", display: "flex", gap: 1 }}>
+      <Drawer
+        anchor="top"
+        open={mobileSearchOpen}
+        onClose={() => setMobileSearchOpen(false)}
+      >
+        <Box sx={{ p: 2, display: "flex", gap: 1 }}>
           <InputBase
             autoFocus
             placeholder="Search Product..."
@@ -163,7 +187,7 @@ function Appbar() {
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           />
-          <IconButton color="primary" onClick={handleSearch}>
+          <IconButton onClick={handleSearch}>
             <SearchIcon />
           </IconButton>
         </Box>
@@ -171,11 +195,8 @@ function Appbar() {
 
       {/* Mobile Drawer Menu */}
       <Drawer anchor="right" open={open} onClose={() => setOpen(false)}>
-        <Box sx={{ width: 220, bgcolor: "lightgray", height: "100%", p: 2 }}>
-          <Typography
-            variant="h6"
-            sx={{ mb: 2, color: "black", fontWeight: "bold", textAlign: "center" }}
-          >
+        <Box sx={{ width: 220, p: 2 }}>
+          <Typography variant="h6" sx={{ mb: 2, textAlign: "center" }}>
             Menu
           </Typography>
 
@@ -183,22 +204,24 @@ function Appbar() {
             {menuItems.map((item) => (
               <ListItem key={item.name} disablePadding>
                 <ListItemButton
-                  onClick={() => {
-                    navigate(item.path);
-                    setOpen(false);
-                  }}
+                  onClick={() => { navigate(item.path); setOpen(false); }}
                 >
-                  <ListItemText
-                    primary={
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                        {item.icon}
-                        {item.name}
-                      </Box>
-                    }
-                  />
+                  <ListItemText primary={item.name} />
                 </ListItemButton>
               </ListItem>
             ))}
+
+            <ListItem disablePadding>
+              <ListItemButton onClick={handleAdmin}>
+                <ListItemText primary="Admin" />
+              </ListItemButton>
+            </ListItem>
+
+            <ListItem disablePadding>
+              <ListItemButton onClick={handleLogout}>
+                <ListItemText primary="Logout" />
+              </ListItemButton>
+            </ListItem>
           </List>
         </Box>
       </Drawer>
@@ -207,4 +230,3 @@ function Appbar() {
 }
 
 export default Appbar;
-

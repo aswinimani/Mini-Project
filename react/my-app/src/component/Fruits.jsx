@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../api";
 import {
   Grid,
   Card,
@@ -12,64 +12,66 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 
 function Fruits() {
   const [products, setProducts] = useState([]);
-  const [favorites, setFavorites] = useState({});
+  const [wishlist, setWishlist] = useState([]);
 
-  // 🥬 Fetch fruits
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await axios.get("http://localhost:5000/api/store/Fruits");
-        setProducts(res.data);
-      } catch (err) {
-        console.error("Error fetching fruits:", err);
-      }
-    };
-    fetchData();
-  }, []);
-
-  // ❤️ Toggle favorite and store in wishlist
-  const toggleFavorite = (product) => {
-    setFavorites((prev) => ({
-      ...prev,
-      [product._id]: !prev[product._id],
-    }));
-
-    let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
-    const exists = wishlist.find((item) => item._id === product._id);
-
-    if (exists) {
-      // Remove from wishlist
-      wishlist = wishlist.filter((item) => item._id !== product._id);
-      localStorage.setItem("wishlist", JSON.stringify(wishlist));
-      // alert(`${product.name} removed from wishlist 💔`);
-    } else {
-      // Add to wishlist
-      wishlist.push(product);
-      localStorage.setItem("wishlist", JSON.stringify(wishlist));
-      // alert(`${product.name} added to wishlist ❤️`);
+  // ❤️ Fetch Wishlist
+  const fetchWishlist = async () => {
+    try {
+      const res = await API.get("/wishlist");
+      setWishlist(res.data.map((item) => item._id));
+    } catch (err) {
+      console.log("Wishlist error:", err);
     }
   };
 
-  // 🛒 Add to cart
-  const handleAddToCart = (product) => {
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
-    const existingItem = cart.find((item) => item._id === product._id);
-
-    if (existingItem) {
-      alert(`${product.name} is already in the cart!`);
-      return;
+  // 🍎 Fetch Fruits
+  const fetchFruits = async () => {
+    try {
+      const res = await API.get("/stores?category=fruits"); // ✅ CORRECT API
+      setProducts(res.data);
+    } catch (err) {
+      console.error("Error fetching fruits:", err);
     }
+  };
 
-    cart.push(product);
-    localStorage.setItem("cart", JSON.stringify(cart));
-    alert(`${product.name} added to cart 🛒`);
+  useEffect(() => {
+    fetchFruits();
+    fetchWishlist();
+  }, []);
+
+  // ❤️ Toggle Wishlist
+  const toggleWishlist = async (productId) => {
+    try {
+      await API.post("/wishlist/add", { productId });
+      fetchWishlist();
+    } catch (err) {
+      alert("Please login first");
+    }
+  };
+
+  // 🛒 Add to Cart
+  const handleAddToCart = async (product) => {
+    try {
+      await API.post("/cart/add", {
+        productId: product._id,
+      });
+      alert("Added to cart");
+    } catch (err) {
+      alert("Please login first");
+    }
   };
 
   return (
-    <div style={{ padding: "60px",paddingTop:"100px" }}>
+    <div style={{ padding: "60px", paddingTop: "100px" }}>
       <Typography variant="h4" align="center" gutterBottom>
         Fruits Category
       </Typography>
+
+      {products.length === 0 && (
+        <Typography align="center" color="text.secondary">
+          No fruits available
+        </Typography>
+      )}
 
       <Grid container spacing={3} justifyContent="center">
         {products.map((item) => (
@@ -80,26 +82,23 @@ function Fruits() {
                 width: "180px",
                 boxShadow: 3,
                 borderRadius: 3,
-                position: "relative",
                 padding: "8px",
-                transition: "transform 0.2s",
-                "&:hover": { transform: "scale(1.03)" },
+                position: "relative",
               }}
             >
-              {/* ❤️ Favorite Button */}
+              {/* ❤️ Wishlist */}
               <IconButton
-                onClick={() => toggleFavorite(item)}
+                onClick={() => toggleWishlist(item._id)}
                 sx={{
                   position: "absolute",
                   top: 5,
                   right: 5,
-                  color: favorites[item._id] ? "red" : "grey",
+                  color: wishlist.includes(item._id) ? "red" : "grey",
                 }}
               >
                 <FavoriteIcon />
               </IconButton>
 
-              {/* 🖼️ Product Image */}
               <img
                 src={item.image}
                 alt={item.name}
@@ -107,32 +106,18 @@ function Fruits() {
                   width: "100%",
                   height: "120px",
                   objectFit: "contain",
-                  borderRadius: 3,
-                  marginTop: "10px",
                 }}
               />
 
-              {/* 📦 Product Details */}
-              <CardContent sx={{ textAlign: "center", padding: "10px" }}>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontWeight: "bold",
-                    textTransform: "capitalize",
-                  }}
-                >
-                  {item.name}
-                </Typography>
-                <Typography sx={{ color: "#555", mb: 1 }}>
-                  ₹{item.price}
-                </Typography>
+              <CardContent sx={{ textAlign: "center" }}>
+                <Typography fontWeight="bold">{item.name}</Typography>
+                <Typography>₹{item.price}</Typography>
 
-                {/* 🛒 Add to Cart Button */}
                 <Button
                   variant="contained"
                   color="success"
                   size="small"
-                  sx={{ borderRadius: 2 }}
+                  sx={{ mt: 1 }}
                   onClick={() => handleAddToCart(item)}
                 >
                   Add to Cart
