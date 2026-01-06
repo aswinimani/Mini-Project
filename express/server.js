@@ -14,20 +14,17 @@ const wishlistRoutes = require("./routes/wishlistRoutes");
 const app = express();
 
 /* ----------------------- ✅ MIDDLEWARE ----------------------- */
-// app.use(
-//   cors({
-//     origin: [
-//       "http://localhost:3000",
-//       "https://mini-project-57ws.onrender.com",
-//     ],
-//     methods: ["GET", "POST", "PUT", "DELETE"],
-//     allowedHeaders: ["Content-Type", "Authorization"],
-//   })
-// );
-app.use(cors({
-  origin: "*",
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://mini-project-57ws.onrender.com",
+    ],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 app.use(express.json());
 
