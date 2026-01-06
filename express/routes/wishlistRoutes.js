@@ -106,14 +106,4 @@ router.delete("/:id", auth, async (req, res) => {
   res.json(wishlist.products);
 });
 
-router.post("/remove", auth, async (req, res) => {
-  const { productId } = req.body;
-  const wishlist = await Wishlist.findOne({ user: req.userId });
-  if (!wishlist) return res.json([]);
-
-  wishlist.products = wishlist.products.filter(p => p.toString() !== productId);
-  await wishlist.save();
-  res.json(wishlist.products);
-});
-
 module.exports = router;
