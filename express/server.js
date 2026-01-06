@@ -18,6 +18,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
+      "https://aswinisgrocery.web.app",
       "https://mini-project-57ws.onrender.com",
     ],
     credentials: true,

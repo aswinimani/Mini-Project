@@ -20,17 +20,28 @@ function Wishlist() {
   }, []);
 
   // ✅ Remove from wishlist
-  const removeFromWishlist = async (productId) => {
-    try {
-      await API.post("/wishlist/remove", { productId });
+  // const removeFromWishlist = async (productId) => {
+  //   try {
+  //     await API.post("/wishlist/remove", { productId });
 
-      setWishlistItems((prev) =>
-        prev.filter((item) => item.product._id !== productId)
-      );
-    } catch (err) {
-      console.log("Remove wishlist error:", err);
-    }
-  };
+  //     setWishlistItems((prev) =>
+  //       prev.filter((item) => item.product._id !== productId)
+  //     );
+  //   } catch (err) {
+  //     console.log("Remove wishlist error:", err);
+  //   }
+  // };
+
+
+  const removeFromWishlist = async (productId) => {
+  try {
+    const res = await API.delete(`/wishlist/${productId}`);
+    setWishlistItems(res.data);
+    fetchWishlist()
+  } catch (error) {
+    console.log(error.response);
+  }
+};
 
   return (
     <div style={{ padding: "60px", paddingTop: "100px" }}>
