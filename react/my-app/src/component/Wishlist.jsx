@@ -1,17 +1,28 @@
 import React, { useEffect, useState } from "react";
-import { Grid, Card, CardContent, Typography, Button } from "@mui/material";
+import {
+  Grid,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  CircularProgress,
+} from "@mui/material";
 import API from "../api";
 
 function Wishlist() {
   const [wishlistItems, setWishlistItems] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // ✅ Fetch wishlist
   const fetchWishlist = async () => {
+    setLoading(true);
     try {
       const res = await API.get("/wishlist");
       setWishlistItems(res.data);
     } catch (err) {
       console.log("Wishlist error:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -19,33 +30,29 @@ function Wishlist() {
     fetchWishlist();
   }, []);
 
-  // ✅ Remove from wishlist
-  // const removeFromWishlist = async (productId) => {
-  //   try {
-  //     await API.post("/wishlist/remove", { productId });
-
-  //     setWishlistItems((prev) =>
-  //       prev.filter((item) => item.product._id !== productId)
-  //     );
-  //   } catch (err) {
-  //     console.log("Remove wishlist error:", err);
-  //   }
-  // };
-
-
   const removeFromWishlist = async (productId) => {
-  try {
-    const res = await API.delete(`/wishlist/${productId}`);
-    setWishlistItems(res.data);
-    fetchWishlist()
-  } catch (error) {
-    console.log(error.response);
+    setLoading(true);
+    try {
+      await API.delete(`/wishlist/${productId}`);
+      fetchWishlist();
+    } catch (error) {
+      console.log(error.response);
+      setLoading(false);
+    }
+  };
+
+  // 🔵 Loader
+  if (loading) {
+    return (
+      <div style={loaderStyle}>
+        <CircularProgress size={60} />
+      </div>
+    );
   }
-};
 
   return (
     <div style={{ padding: "60px", paddingTop: "100px" }}>
-      <Typography variant="h4" align="center">
+      <Typography variant="h4" align="center" gutterBottom>
         ❤️ Wishlist
       </Typography>
 
@@ -59,7 +66,7 @@ function Wishlist() {
                 <img
                   src={item.image}
                   alt={item.name}
-                  style={{ width: "100%", height: 150 }}
+                  style={{ width: "100%", height: 150, objectFit: "cover" }}
                 />
 
                 <CardContent>
@@ -67,10 +74,10 @@ function Wishlist() {
                   <Typography>₹{item.price}</Typography>
 
                   <Button
-                  variant="contained"
+                    variant="contained"
                     color="error"
                     size="small"
-                    sx={{mt:1}}
+                    sx={{ mt: 1 }}
                     onClick={() => removeFromWishlist(item._id)}
                   >
                     Remove
@@ -84,5 +91,12 @@ function Wishlist() {
     </div>
   );
 }
+
+const loaderStyle = {
+  minHeight: "70vh",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+};
 
 export default Wishlist;

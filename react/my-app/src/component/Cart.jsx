@@ -1,10 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { Grid, Card, CardContent, Typography, Button, Box } from "@mui/material";
+import {
+  Grid,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  Box,
+  CircularProgress,
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import API from "../api";
 
 function Cart() {
   const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(true); // 🔵 loader state
   const navigate = useNavigate();
 
   // ✅ Fetch Cart
@@ -14,6 +23,8 @@ function Cart() {
       setCartItems(res.data);
     } catch (err) {
       console.log("Cart fetch error:", err);
+    } finally {
+      setLoading(false); // 🔵 stop loader
     }
   };
 
@@ -35,14 +46,24 @@ function Cart() {
 
   // ✅ Buy single product
   const buyProduct = (product) => {
-    // Navigate to Buy page with single product
     navigate("/buy", { state: { products: [product] } });
   };
 
   // ✅ Buy all products
   const buyAllProducts = () => {
-    navigate("/buy", { state: { products: cartItems.map((item) => item.product) } });
+    navigate("/buy", {
+      state: { products: cartItems.map((item) => item.product) },
+    });
   };
+
+  // 🔵 Loader UI
+  if (loading) {
+    return (
+      <div style={loaderStyle}>
+        <CircularProgress size={60} />
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: "60px", paddingTop: "100px" }}>
@@ -102,5 +123,12 @@ function Cart() {
     </div>
   );
 }
+
+const loaderStyle = {
+  minHeight: "70vh",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+};
 
 export default Cart;

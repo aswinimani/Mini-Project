@@ -7,12 +7,22 @@ import {
   Typography,
   IconButton,
   Button,
+  CircularProgress,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 
 function Fruits() {
   const [products, setProducts] = useState([]);
   const [wishlist, setWishlist] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   // ❤️ Fetch Wishlist
   const fetchWishlist = async () => {
@@ -27,10 +37,12 @@ function Fruits() {
   // 🍎 Fetch Fruits
   const fetchFruits = async () => {
     try {
-      const res = await API.get("/store/Fruits"); // ✅ CORRECT API
+      const res = await API.get("/store/Fruits");
       setProducts(res.data);
     } catch (err) {
       console.error("Error fetching fruits:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -44,8 +56,17 @@ function Fruits() {
     try {
       await API.post("/wishlist/add", { productId });
       fetchWishlist();
+      setSnackbar({
+        open: true,
+        message: "Added to wishlist",
+        severity: "success",
+      });
     } catch (err) {
-      alert("Please login first");
+      setSnackbar({
+        open: true,
+        message: "Please login first",
+        severity: "error",
+      });
     }
   };
 
@@ -55,11 +76,28 @@ function Fruits() {
       await API.post("/cart/add", {
         productId: product._id,
       });
-      alert("Added to cart");
+      setSnackbar({
+        open: true,
+        message: "Product added to cart",
+        severity: "success",
+      });
     } catch (err) {
-      alert("Please login first");
+      setSnackbar({
+        open: true,
+        message: "Please login first",
+        severity: "error",
+      });
     }
   };
+
+  // 🔵 Loader
+  if (loading) {
+    return (
+      <div style={loaderStyle}>
+        <CircularProgress size={60} />
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: "60px", paddingTop: "100px" }}>
@@ -67,11 +105,21 @@ function Fruits() {
         Fruits Category
       </Typography>
 
-      {/* {products.length === 0 && (
-        <Typography align="center" color="text.secondary">
-          No fruits available
-        </Typography>
-      )} */}
+      {/* 🔔 Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          severity={snackbar.severity}
+          variant="filled"
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
 
       <Grid container spacing={3} justifyContent="center">
         {products.map((item) => (
@@ -130,5 +178,12 @@ function Fruits() {
     </div>
   );
 }
+
+const loaderStyle = {
+  minHeight: "70vh",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+};
 
 export default Fruits;
