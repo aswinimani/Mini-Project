@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 
-function Fruits() {
+function Fruits({setCartCount,setWishlistCount}) {
   const [products, setProducts] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -55,6 +55,7 @@ function Fruits() {
   const toggleWishlist = async (productId) => {
     try {
       await API.post("/wishlist/add", { productId });
+      setWishlistCount(prev=>prev+1)
       fetchWishlist();
       setSnackbar({
         open: true,
@@ -76,6 +77,7 @@ function Fruits() {
       await API.post("/cart/add", {
         productId: product._id,
       });
+      setCartCount(prev => prev + 1);
       setSnackbar({
         open: true,
         message: "Product added to cart",
@@ -110,7 +112,7 @@ function Fruits() {
         open={snackbar.open}
         autoHideDuration={3000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
       >
         <Alert
           severity={snackbar.severity}

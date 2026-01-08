@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, } from "react";
 import {
   AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem,
   ListItemButton, ListItemText, Box, InputBase, Badge, Menu, MenuItem
@@ -13,36 +13,17 @@ import SearchIcon from "@mui/icons-material/Search";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
 import img from "../assets/OIP.jpg";
 
-function Appbar({ token }) {  // <-- token prop pass pannunga from parent
+function Appbar({cartCount,wishlistCount,setCartCount,setWishlistCount }) {  // <-- token prop pass pannunga from parent
   const [open, setOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [profileAnchorEl, setProfileAnchorEl] = useState(null);
-  const [cartCount, setCartCount] = useState(0);
+  
 
   const navigate = useNavigate();
-
-  // ⭐ Fetch cart count from backend API
-  const fetchCartCount = async () => {
-    if (!token) return;
-    try {
-      const res = await axios.get("http://localhost:5000/api/cart", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setCartCount(res.data.length);
-    } catch (err) {
-      console.error("Cart fetch error:", err);
-    }
-  };
-
-  useEffect(() => {
-    fetchCartCount();
-  }, [token]);
-
-  const handleSearch = () => {
+const handleSearch = () => {
     if (search.trim() !== "") {
       navigate(`/search?query=${search}`);
       setSearch("");
@@ -54,12 +35,21 @@ function Appbar({ token }) {  // <-- token prop pass pannunga from parent
   const handleProfileOpen = (event) => setProfileAnchorEl(event.currentTarget);
   const handleProfileClose = () => setProfileAnchorEl(null);
   const handleAdmin = () => { handleProfileClose(); navigate("/profile"); };
-  const handleLogout = () => { handleProfileClose(); navigate("/"); };
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // 🔐 logout
+    setCartCount(0);                  // ⭐ clear cart
+    setWishlistCount(0);              // ⭐ clear wishlist
+    navigate("/");
+  };
 
   const menuItems = [
     { name: "Home", icon: <HomeIcon />, path: "/home" },
     { name: "Products", icon: <StorefrontIcon />, path: "/products" },
-    { name: "Wishlist", icon: <FavoriteIcon />, path: "/wishlist" },
+    { name: "Wishlist", icon:(
+      <Badge badgeContent={wishlistCount} color="error">
+      <FavoriteIcon />
+    </Badge>
+    ), path: "/wishlist" },
     {
       name: "Cart",
       icon: (

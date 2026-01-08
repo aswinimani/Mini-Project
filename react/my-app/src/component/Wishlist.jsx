@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import API from "../api";
 
-function Wishlist() {
+function Wishlist({setWishlistCount}) {
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,6 +34,7 @@ function Wishlist() {
     setLoading(true);
     try {
       await API.delete(`/wishlist/${productId}`);
+      setWishlistCount(prev => Math.max(prev - 1, 0));
       fetchWishlist();
     } catch (error) {
       console.log(error.response);

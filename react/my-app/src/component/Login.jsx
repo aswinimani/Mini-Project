@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { CircularProgress, Snackbar, Alert } from "@mui/material";
+import API from "../api";
 
-function Login() {
+function Login({ onLoginSuccess }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,12 +21,17 @@ function Login() {
     setLoading(true);
 
     try {
-      const res = await axios.post(
-        "https://mini-project-57ws.onrender.com/api/login",
-        { email, password }
-      );
+      const res = await API.post("/login", { email, password });
+        
+        
 
+      // ✅ Save token
       localStorage.setItem("token", res.data.token);
+
+      // ⭐ IMPORTANT: App.js-ku notify pannrom
+      if (onLoginSuccess) {
+        onLoginSuccess();
+      }
 
       setSnackbar({
         open: true,
@@ -70,7 +75,7 @@ function Login() {
         open={snackbar.open}
         autoHideDuration={3000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
       >
         <Alert
           onClose={() => setSnackbar({ ...snackbar, open: false })}

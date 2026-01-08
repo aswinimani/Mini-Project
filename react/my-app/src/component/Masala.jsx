@@ -1,6 +1,3 @@
-
-
-
 import React, { useEffect, useState } from "react";
 import API from "../api";
 import {
@@ -10,12 +7,22 @@ import {
   Typography,
   IconButton,
   Button,
+  CircularProgress,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 
-function Masala() {
+function Masala({setCartCount,setWishlistCount}) {
   const [products, setProducts] = useState([]);
   const [wishlist, setWishlist] = useState([]);
+   const [loading, setLoading] = useState(true);
+  
+    const [snackbar, setSnackbar] = useState({
+      open: false,
+      message: "",
+      severity: "success",
+    });
 
  
 
@@ -35,6 +42,8 @@ function Masala() {
       setProducts(res.data);
     } catch (err) {
       console.log("Error fetching masala:", err);
+    }finally{
+      setLoading(false);
     }
   };
 
@@ -48,9 +57,19 @@ function Masala() {
   const toggleWishlist = async (productId) => {
     try {
         await API.post("/wishlist/add", { productId });
+        setWishlistCount(prev=>prev+1);
       fetchWishlist();
+      setSnackbar({
+        open: true,
+        message: "Added to wishlist",
+        severity: "success",
+      });
     } catch (err) {
-      alert("Please login first");
+      setSnackbar({
+        open: true,
+        message: "Please login first",
+        severity: "error",
+      });
     }
   };
 
@@ -60,17 +79,51 @@ function Masala() {
       await API.post("/cart/add", {
         productId: product._id,
       });
-      alert("Added to cart");
+      setCartCount(prev=>prev+1);
+      setSnackbar({
+        open: true,
+        message: "Product added to cart",
+        severity: "success",
+      });
     } catch (err) {
-      alert("Please login first");
+      setSnackbar({
+        open: true,
+        message: "Please login first",
+        severity: "error",
+      });
     }
   };
+
+  // 🔵 Loader
+    if (loading) {
+      return (
+        <div style={loaderStyle}>
+          <CircularProgress size={60} />
+        </div>
+      );
+    }
 
   return (
     <div style={{ padding: "60px", paddingTop: "100px" }}>
       <Typography variant="h4" align="center" gutterBottom>
         Masala Category
       </Typography>
+
+      {/* 🔔 Snackbar */}
+            <Snackbar
+              open={snackbar.open}
+              autoHideDuration={3000}
+              onClose={() => setSnackbar({ ...snackbar, open: false })}
+              anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+            >
+              <Alert
+                severity={snackbar.severity}
+                variant="filled"
+                onClose={() => setSnackbar({ ...snackbar, open: false })}
+              >
+                {snackbar.message}
+              </Alert>
+            </Snackbar>
 
       <Grid container spacing={3} justifyContent="center">
         {products.map((item) => (
@@ -129,5 +182,13 @@ function Masala() {
     </div>
   );
 }
+
+const loaderStyle = {
+  minHeight: "70vh",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+};
+
 
 export default Masala;

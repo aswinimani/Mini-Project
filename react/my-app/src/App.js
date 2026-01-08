@@ -1,4 +1,5 @@
-import React from "react";
+import React ,{useState,useEffect} from "react";
+import API from "./api";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./component/Login";
 import Register from "./component/Register";
@@ -27,30 +28,76 @@ import Track from "./component/Track";
 
 function App() {
   
-  
+  const [cartCount, setCartCount] = useState(0);
+  const [wishlistCount, setWishlistCount] = useState(0);
+
+  // ⭐ REFRESH SUPPORT
+
+    const fetchCounts = async () => {
+      const token = localStorage.getItem("token");
+
+      // ❌ not logged in
+      if (!token) {
+        setCartCount(0);
+        setWishlistCount(0);
+        return;
+      }
+      try {
+        const cartRes = await API.get("/cart");
+        setCartCount(cartRes.data.length);
+
+        const wishRes = await API.get("/wishlist");
+        setWishlistCount(wishRes.data.length);
+      } catch (err) {
+        console.log("Count fetch error", err);
+      }
+    };
+
+    useEffect(()=>{
+    fetchCounts();
+  }, []);
   return (
     <BrowserRouter>
-    <Appbar/>
+    <Appbar 
+    cartCount={cartCount}
+        wishlistCount={wishlistCount}
+        setCartCount={setCartCount}
+        setWishlistCount={setWishlistCount}/>
       <Routes>
-        <Route path="/" element={<Login/>}/>
+
+        <Route path="/" element={<Login onLoginSuccess={fetchCounts} />}/>
+
         <Route path="/home" element={<Home />} />
         <Route path="/products"element={<Product/>}/>
         <Route path="/profile"element={<Profile/>}/>
         <Route path="/store"element={<Store/>}/>
-        <Route path="/cart"element={<Cart/>}/>
+        
+        <Route path="/cart"element={<Cart setCartCount={setCartCount}/>}/>
+
         <Route path="/register" element={<Register />} />
         <Route path="/buy"element={<Buy/>}/>
         <Route path="/order"element={<Order/>}/>
-        <Route path="/wishlist" element={<Wishlist/>}/>
-        <Route path="/category/Fruits" element={<Fruits/>}/>
-        <Route path="/category/Vegetables" element={<Vegetables/>}/> 
-        <Route path="/category/Masala"element={<Masala/>}/>
-        <Route path="/category/Nuts"element={<Nuts/>}/> 
-        <Route path="/category/Seeds"element={<Seeds/>}/> 
-        <Route path="/category/Rice"element={<Rice/>}/>
-        <Route path="/category/Juice"element={<Juice/>}/> 
-        <Route path="/category/MilkProduct"element={<MilkProduct/>}/> 
-        <Route path="/search" element={<SearchResult/>}/>
+
+        <Route path="/wishlist" element={<Wishlist setWishlistCount={setWishlistCount}/>}/>
+
+        <Route path="/category/Fruits" element={<Fruits setCartCount={setCartCount}
+              setWishlistCount={setWishlistCount}/>}/>
+        <Route path="/category/Vegetables" element={<Vegetables setCartCount={setCartCount}
+              setWishlistCount={setWishlistCount}/>}/> 
+        <Route path="/category/Masala"element={<Masala setCartCount={setCartCount}
+              setWishlistCount={setWishlistCount}/>}/>
+        <Route path="/category/Nuts"element={<Nuts setCartCount={setCartCount}
+              setWishlistCount={setWishlistCount}/>}/> 
+        <Route path="/category/Seeds"element={<Seeds setCartCount={setCartCount}
+              setWishlistCount={setWishlistCount}/>}/> 
+        <Route path="/category/Rice"element={<Rice setCartCount={setCartCount}
+              setWishlistCount={setWishlistCount}/>}/>
+        <Route path="/category/Juice"element={<Juice setCartCount={setCartCount}
+              setWishlistCount={setWishlistCount}/>}/> 
+        <Route path="/category/MilkProduct"element={<MilkProduct setCartCount={setCartCount}
+              setWishlistCount={setWishlistCount}/>}/> 
+
+        <Route path="/search" element={<SearchResult />}/>
         <Route path="/productdetails" element={<ProductDetails/>}/>
         <Route path="/track" element={<Track/>}/>
         </Routes>

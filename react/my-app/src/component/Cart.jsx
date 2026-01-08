@@ -11,7 +11,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import API from "../api";
 
-function Cart() {
+function Cart({setCartCount}) {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true); // 🔵 loader state
   const navigate = useNavigate();
@@ -39,8 +39,10 @@ function Cart() {
       setCartItems((prev) =>
         prev.filter((item) => item.product._id !== productId)
       );
+      setCartCount(prev => Math.max(prev - 1, 0));
     } catch (err) {
       console.log("Remove cart error:", err);
+      
     }
   };
 
